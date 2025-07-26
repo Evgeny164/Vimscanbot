@@ -1,55 +1,55 @@
-import logging
+mport logging
 import json
 import aiohttp
 import os
 from aiogram import Bot, Dispatcher, types
 from aiogram.utils import executor
 
-# Настройка логов
+# Логирование
 logging.basicConfig(level=logging.INFO)
 
-# Telegram
+# Telegram токен
 bot = Bot(token=os.environ["BOT_TOKEN"])
 dp = Dispatcher(bot)
 
-# Ссылки
+# Ссылки на GitHub-базы
 VITAMINS_URL = "https://raw.githubusercontent.com/Evgeny164/Vimscanbot/main/knowledge/vitamins.json"
 MINERALS_URL = "https://raw.githubusercontent.com/Evgeny164/Vimscanbot/main/knowledge/minerals.json"
 
+# Словари знаний
 vitamin_knowledge = {}
 mineral_knowledge = {}
 
-# Обновление базы
+# Команда /обновить_базу
 @dp.message_handler(commands=["обновить_базу"])
 async def update_base(message: types.Message):
     global vitamin_knowledge, mineral_knowledge
     async with aiohttp.ClientSession() as session:
-        # Витамины
+        # Загрузка витаминов
         async with session.get(VITAMINS_URL) as resp1:
             if resp1.status == 200:
-                text1 = await resp1.text()
-                vitamin_knowledge = json.loads(text1)
+                vitamin_knowledge = json.loads(await resp1.text())
                 logging.info("✅ Vitamins base loaded.")
             else:
-                logging.warning("❌ Failed to load vitamins.")
+                logging.warning("❌ Failed to load vitamins.json")
 
-        # Минералы
+        # Загрузка минералов
         async with session.get(MINERALS_URL) as resp2:
             if resp2.status == 200:
-                text2 = await resp2.text()
-                mineral_knowledge = json.loads(text2)
+                mineral_knowledge = json.loads(await resp2.text())
                 logging.info("✅ Minerals base loaded.")
             else:
-                logging.warning("❌ Failed to load minerals.")
+                logging.warning("❌ Failed to load minerals.json")
 
     await message.reply("✅ База витаминов и минералов загружена!")
 
-# Ответы
+# Ответы на запросы
 @dp.message_handler()
 async def handle_query(message: types.Message):
     query = message.text.lower().strip()
     logging.info(f"🔍 User asked: {query}")
 
+    # Поиск в витаминах
     for name, info in vitamin_knowledge.items():
         if query in name.lower():
             reply = f"💊 *{name}*\n"
@@ -58,6 +58,7 @@ async def handle_query(message: types.Message):
             await message.reply(reply, parse_mode="Markdown")
             return
 
+    # Поиск в минералах
     for name, info in mineral_knowledge.items():
         if query in name.lower():
             reply = f"🧪 *{name}*\n"
