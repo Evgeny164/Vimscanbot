@@ -14,7 +14,7 @@ dp = Dispatcher(bot)
 
 # Ссылка на файл с витаминами на GitHub (RAW-ссылка!)
 VITAMINS_URL = "https://raw.githubusercontent.com/Evgeny164/Vimscanbot/main/knowledge/vitamins.json"
-vitamin_knowledge = {}  # база знаний будет храниться здесь
+vitamin_knowledge = {} # база знаний будет храниться здесь
 
 # Команда: /обновить_базу — загружает JSON с GitHub
 @dp.message_handler(commands=["обновить_базу"])
