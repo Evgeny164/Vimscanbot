@@ -5,46 +5,49 @@ import os
 from aiogram import Bot, Dispatcher, types
 from aiogram.utils import executor
 
-# Telegram токен
+# Настройка логов для Railway
+logging.basicConfig(level=logging.INFO)
+
+# Токен бота из переменной окружения
 bot = Bot(token=os.environ["BOT_TOKEN"])
 dp = Dispatcher(bot)
 
-# GitHub JSON с базой знаний
+# Ссылка на файл с витаминами на GitHub (RAW-ссылка!)
 VITAMINS_URL = "https://raw.githubusercontent.com/Evgeny164/Vimscanbot/main/knowledge/vitamins.json"
-vitamin_knowledge = {}
+vitamin_knowledge = {}  # база знаний будет храниться здесь
 
-# Обновление базы
+# Команда: /обновить_базу — загружает JSON с GitHub
 @dp.message_handler(commands=["обновить_базу"])
 async def update_base(message: types.Message):
-    global vitamin_knowledge
-    print("📥 Загружаю базу витаминов...")
-    async with aiohttp.ClientSession() as session:
-        async with session.get(VITAMINS_URL) as resp:
-            if resp.status == 200:
-                text = await resp.text()
-                vitamin_knowledge = json.loads(text)
-                print("✅ База загружена")
-                await message.reply("✅ База витаминов загружена!")
-            else:
-                print("❌ Не удалось загрузить базу")
-                await message.reply("⚠️ Ошибка загрузки базы.")
+    global vitamin_knowledge
+    logging.info("📥 Запрос на обновление базы витаминов...")
+    async with aiohttp.ClientSession() as session:
+        async with session.get(VITAMINS_URL) as resp:
+            if resp.status == 200:
+                text = await resp.text()
+                vitamin_knowledge = json.loads(text)
+                logging.info("✅ База витаминов загружена:")
+                logging.info(vitamin_knowledge)
+                await message.reply("✅ База витаминов успешно обновлена!")
+            else:
+                logging.warning(f"⚠️ Не удалось загрузить базу. Код: {resp.status}")
+                await message.reply("⚠️ Не удалось загрузить базу знаний.")
 
-# Ответ на запрос о витамине
+# Обработка сообщений: витамин d, витамин b12 и т.п.
 @dp.message_handler(lambda msg: msg.text.lower().startswith("витамин"))
 async def reply_about_vitamin(message: types.Message):
-    query = message.text.lower().strip()
-    print(f"🔎 Запрос: {query}")
-    for name, info in vitamin_knowledge.items():
-        if query in name.lower():
-            reply = f"💊 *{name}*\n"
-            for key, value in info.items():
-                reply += f"• **{key.capitalize()}**: {value}\n"
-            await message.reply(reply, parse_mode="Markdown")
-            return
-    await message.reply("Не нашёл такого витамина 😔")
+    query = message.text.lower().strip()
+    logging.info(f"🔍 Запрос пользователя: {query}")
+    for name, info in vitamin_knowledge.items():
+        if query in name.lower():
+            response = f"💊 *{name}*\n"
+            for key, value in info.items():
+                response += f"• **{key.capitalize()}**: {value}\n"
+            await message.reply(response, parse_mode="Markdown")
+            return
+    await message.reply("😔 Не нашёл такого витамина в базе.")
 
-# Старт
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-    print("🚀 Бот запущен!")
-    executor.start_polling(dp, skip_updates=True) 
+# Запуск бота
+if __name__ == "__main__":
+    print("🚀 Бот запущен и готов к работе!")
+    executor.start_polling(dp, skip_updates=True)
