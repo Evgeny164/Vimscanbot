@@ -15,6 +15,7 @@ dp = Dispatcher(bot)
 # Ссылки на GitHub-базы
 VITAMINS_URL = "https://raw.githubusercontent.com/Evgeny164/Vimscanbot/main/knowledge/vitamins.json"
 MINERALS_URL = "https://raw.githubusercontent.com/Evgeny164/Vimscanbot/main/knowledge/minerals.json"
+minerals_knowledg
 
 # Словари знаний
 vitamin_knowledge = {}
