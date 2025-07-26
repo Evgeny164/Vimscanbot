@@ -29,17 +29,12 @@ async def update_base(message: types.Message):
 # Обработка сообщений: витамин D / витамин B12 и т.п.
 @dp.message_handler(lambda msg: msg.text.lower().startswith("витамин"))
 async def reply_about_vitamin(message: types.Message):
-    query = message.text.lower()
+    query = message.text.lower().strip()
     for name, info in vitamin_knowledge.items():
-        if name.lower() in query:
+        if query in name.lower():
             reply = f"💊 *{name}*\n"
             for key, value in info.items():
                 reply += f"• **{key.capitalize()}**: {value}\n"
             await message.reply(reply, parse_mode="Markdown")
             return
-    await message.reply("Не нашёл такого витамина 😔")
-
-# Запуск бота
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-    executor.start_polling(dp, skip_updates=True) 
+    await message.reply("Не нашёл такого витамина 😔") 
